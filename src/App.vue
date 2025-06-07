@@ -6,14 +6,9 @@
     <!-- 应用内容区域，显示路由匹配的页面 -->
     <div class="app-content">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
+        <component :is="Component" />
       </router-view>
     </div>
-
-    <!-- 浮动操作按钮 (FAB) -->
-    <FAB @show-create-modal="handleShowModal('create')" />
 
     <!-- 底部导航 -->
     <BottomNav />
@@ -27,7 +22,6 @@
 import { ref } from 'vue'; // 引入 ref
 import AppHeader from './components/AppHeader.vue';
 import BottomNav from './components/BottomNav.vue';
-import FAB from './components/FAB.vue';
 import Modals from './components/Modals.vue';
 
 // 获取 Modals 组件实例，用于调用其方法
@@ -64,17 +58,6 @@ const handleShowModal = (type: 'create' | 'switch') => {
   padding: 16px;
   position: relative;
   background: var(--light);
-}
-
-/* 页面切换过渡效果 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 
 /* 响应式调整 */

@@ -2,7 +2,7 @@
   <div class="page" id="home">
     <div class="section" style="text-align: center; padding-top: 20px;">
       <h3 class="section-title">我的电子 ID 卡</h3>
-      <div class="card" style="margin: 20px auto; max-width: 300px; background: linear-gradient(135deg, #4a6cf7, #8b5cf6);">
+      <div class="card" style="margin: 20px auto; max-width: 260px; background: linear-gradient(135deg, #4a6cf7, #8b5cf6);">
         <div class="card-header">
           <div class="card-title">工作身份</div>
           <div class="card-badge">永久</div>
@@ -55,8 +55,8 @@ const handleNFC = () => {
 <style scoped>
 /* 首页样式 */
 .home-qr-area {
-  width: 180px;
-  height: 180px;
+  width: 150px;
+  height: 150px;
   background: white;
   padding: 10px;
   border-radius: var(--border-radius);
@@ -74,7 +74,7 @@ const handleNFC = () => {
 
 .home-actions {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   justify-content: center;
   margin-top: 24px;
 }
@@ -147,7 +147,7 @@ const handleNFC = () => {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
-  padding: 10px;
+  padding: 8px 10px;
   border-radius: 12px;
   font-weight: 500;
   display: flex;
@@ -165,7 +165,7 @@ const handleNFC = () => {
 /* 响应式调整 */
 @media (max-width: 480px) {
   .card {
-    min-width: 260px;
+    min-width: 240px;
   }
 }
 </style>
