@@ -1,0 +1,87 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+:root {
+    --primary: #4a6cf7;
+    --primary-light: #eef2ff;
+    --secondary: #8b5cf6;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --dark: #1e293b;
+    --light: #f8fafc;
+    --gray: #94a3b8;
+    --border-radius: 16px;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+}
+
+body {
+    background: linear-gradient(135deg, #f0f4ff, #e6f0ff);
+    color: var(--dark);
+    line-height: 1.6;
+    min-height: 100vh;
+    /* 移除模拟手机屏幕的居中和留白样式 */
+}
+
+/* 将 phone2.css 中非组件特有的全局或通用样式也迁移过来 */
+.section {
+    margin-bottom: 24px;
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.btn-more {
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background: #3a5af5;
+    transform: translateY(-2px);
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+    /* 移除模拟手机屏幕的留白样式 */
+}

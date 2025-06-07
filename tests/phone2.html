@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDConnect - 多重身份统一交换平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        :root {
+            --primary: #4a6cf7;
+            --primary-light: #eef2ff;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --border-radius: 16px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4ff, #e6f0ff);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header Styles */
+        .app-header {
+            background: white;
+            padding: 20px 16px 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .app-title i {
+            background: var(--primary-light);
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .current-identity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--dark);
+            cursor: pointer;
+            padding: 8px 12px;
+            background: var(--light);
+            border-radius: 12px;
+            align-self: flex-start; /* Align to the left */
+            margin-top: 8px;
+            transition: var(--transition);
+        }
+
+        .current-identity:hover {
+            background: #eef2ff;
+        }
+
+        .current-identity i {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+
+        /* Main Content Area */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            position: relative;
+            background: var(--light); /* Add light background to content area */
+        }
+
+        .page {
+            display: none; /* Hide all pages by default */
+        }
+
+        .page.active {
+            display: block; /* Show active page */
+        }
+
+        .section {
+            margin-bottom: 24px;
+            background: white; /* Add white background to sections */
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .btn-more {
+            color: var(--primary); /* Change more button color */
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        /* ID Cards */
+        .cards-container {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            /* Removed negative margin and padding-right as section has padding */
+        }
+
+        .card {
+            min-width: 280px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); /* Use CSS variables */
+            border-radius: var(--border-radius);
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            flex-shrink: 0; /* Prevent shrinking in flex container */
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .card-content {
+            margin-bottom: 16px;
+        }
+
+        .card-meta {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px; /* Increased margin */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .card-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .card-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Home Page QR Code Area */
+        .home-qr-area {
+            width: 180px; /* Fixed size for QR code area */
+            height: 180px; /* Fixed size for QR code area */
+            background: white; /* White background for QR code */
+            padding: 10px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto; /* Center the QR code */
+        }
+
+        .home-qr-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .home-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        /* NFC Section - Integrated into Home Page */
+        /* Styles for NFC section are now part of the home page structure */
+        /* No separate .nfc-section style needed here */
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none; /* Remove underline from buttons */
+        }
+
+        .btn-primary:hover {
+            background: #3a5af5;
+            transform: translateY(-2px);
+        }
+
+        /* Styles for Identity Page List */
+        .identity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .identity-list .card {
+            min-width: auto;
+            width: 100%;
+            padding: 16px;
+            cursor: pointer;
+        }
+
+        .identity-list .card .card-header {
+            margin-bottom: 12px;
+        }
+
+        .identity-list .card .card-meta {
+            margin-bottom: 4px;
+        }
+
+        .add-identity-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border: 2px dashed var(--gray);
+            border-radius: 12px;
+            color: var(--gray);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 16px;
+        }
+
+        .add-identity-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+
+        /* Groups List (for Groups Page) */
+        .groups-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .groups-list .group-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--light);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .groups-list .group-item:hover {
+            background: #eef2ff; /* Lighter hover effect */
+        }
+
+        .groups-list .group-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .groups-list .group-info {
+            flex: 1;
+        }
+
+        .groups-list .group-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .groups-list .group-meta {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .add-group-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border: 2px dashed var(--gray);
+            border-radius: 12px;
+            color: var(--gray);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 16px;
+        }
+
+        .add-group-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Discover List (for Discover Page) */
+        .discover-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .discover-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--light);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .discover-item:hover {
+            background: #eef2ff;
+        }
+
+        .discover-avatar {
+            min-width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--secondary); /* Different color for discover avatar */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .discover-info {
+            flex: 1;
+        }
+
+        .discover-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .discover-meta {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .discover-action button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .discover-action button:hover {
+            background: #3a5af5;
+        }
+
+
+        /* Channel Feed (for Channel Page) */
+        .channel-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .channel-feed .activity-item {
+            display: flex;
+            gap: 16px;
+            padding: 0; /* Remove padding as section has padding */
+            border-bottom: none; /* Remove border as items are separated by gap */
+        }
+
+        .channel-feed .activity-avatar {
+            min-width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .channel-feed .activity-content {
+            flex: 1;
+        }
+
+        .channel-feed .activity-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .channel-feed .activity-user {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .channel-feed .activity-time {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .channel-feed .activity-text {
+            margin-bottom: 12px; /* Increased margin */
+            color: var(--dark);
+        }
+
+        .channel-feed .activity-image {
+            width: 100%;
+            border-radius: 16px;
+            margin-top: 8px;
+            background: var(--light); /* Use light background */
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            object-fit: cover; /* Ensure image covers the area */
+        }
+
+        .channel-actions {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .channel-actions span {
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .channel-actions span:hover {
+            color: var(--primary);
+        }
+
+        .channel-actions i {
+            margin-right: 4px;
+        }
+
+        /* Personal Channel Header (for Channel Page) */
+        .personal-channel-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .personal-channel-avatar {
+            min-width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .personal-channel-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .personal-channel-info p {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        /* Direct Messages and Group Chats (for Channel Page) */
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--light);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .chat-item:hover {
+            background: #eef2ff;
+        }
+
+        .chat-avatar {
+            min-width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .chat-info {
+            flex: 1;
+        }
+
+        .chat-info h4 {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .chat-info p {
+            font-size: 14px;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: var(--gray);
+            flex-shrink: 0;
+        }
+
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 12px 0; /* Adjusted padding */
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03); /* Add subtle top shadow */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--gray);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1; /* Distribute space evenly */
+            text-align: center;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 22px; /* Slightly larger icon */
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: absolute;
+            bottom: 80px; /* Position above bottom nav */
+            right: 24px;
+            width: 56px; /* Slightly smaller */
+            height: 56px; /* Slightly smaller */
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
+            cursor: pointer;
+            z-index: 20;
+            transition: var(--transition);
+        }
+
+        .fab:hover {
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Darker overlay */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 24px;
+            transform: translateY(20px);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--gray); /* Changed color */
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Identity List in Modal */
+        .identity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .identity-list .card {
+            min-width: auto; /* Override min-width for modal cards */
+            width: 100%;
+            padding: 16px; /* Adjusted padding */
+            cursor: pointer;
+        }
+
+        .identity-list .card .card-header {
+            margin-bottom: 12px; /* Adjusted margin */
+        }
+
+        .identity-list .card .card-meta {
+            margin-bottom: 4px; /* Adjusted margin */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 0; /* Ensure no padding on small screens */
+            }
+
+            .app-container {
+                height: 100vh; /* Ensure full height on small screens */
+                border-radius: 0; /* Remove border radius on full screen mobile */
+            }
+
+            .card {
+                min-width: 260px;
+            }
+
+            .app-header {
+                padding: 16px; /* Adjusted header padding */
+            }
+
+            .app-content {
+                padding: 12px; /* Adjusted content padding */
+            }
+
+            .section {
+                padding: 16px; /* Adjusted section padding */
+            }
+
+            .bottom-nav {
+                padding: 10px 0; /* Adjusted bottom nav padding */
+            }
+
+            .fab {
+                bottom: 70px; /* Adjusted FAB position */
+                right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="header-top">
+                <div class="app-title">
+                    <i class="fas fa-id-card"></i>
+                    <span>IDConnect</span>
+                </div>
+                <div class="user-avatar">张</div>
+            </div>
+
+            <!-- Current Identity Display -->
+            <div class="current-identity">
+                <span id="currentIdentityName">工作身份</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+
+        <!-- App Content - Pages -->
+        <div class="app-content">
+            <!-- Home Page (Current ID Card) -->
+            <div class="page active" id="home">
+                <div class="section" style="text-align: center; padding-top: 20px;">
+                    <h3 class="section-title">我的电子 ID 卡</h3>
+                    <div class="card" style="margin: 20px auto; max-width: 300px; background: linear-gradient(135deg, #4a6cf7, #8b5cf6);">
+                        <div class="card-header">
+                            <div class="card-title">工作身份</div>
+                            <div class="card-badge">永久</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-meta">
+                                <i class="fas fa-user-tie"></i>
+                                <span>高级产品经理</span>
+                            </div>
+                            <div class="card-meta">
+                                <i class="fas fa-link"></i>
+                                <span>微信: work_zhang</span>
+                            </div>
+                            <div class="card-meta">
+                                <i class="fas fa-users"></i>
+                                <span>12个群组</span>
+                            </div>
+                        </div>
+                        <!-- Placeholder for QR Code -->
+                        <div class="home-qr-area">
+                            <img src="placeholder_qr.png" alt="QR Code">
+                        </div>
+                    </div>
+                    <div class="home-actions">
+                        <button class="btn-primary">
+                            <i class="fas fa-qrcode"></i> 扫描二维码
+                        </button>
+                        <button class="btn-primary">
+                            <i class="fas fa-exchange-alt"></i> NFC 碰一碰
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity Page -->
+            <div class="page" id="identity">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">我的身份卡管理</div>
+                        <div class="btn-more">新增</div>
+                    </div>
+                    <div class="identity-list">
+                        <!-- Example Identity Card Item -->
+                         <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">工作身份</div>
+                                <div class="card-badge">永久</div>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-meta">
+                                    <i class="fas fa-user-tie"></i>
+                                    <span>高级产品经理</span>
+                                </div>
+                                <div class="card-meta">
+                                    <i class="fas fa-link"></i>
+                                    <span>微信: work_zhang</span>
+                                </div>
+                                <div class="card-meta">
+                                    <i class="fas fa-users"></i>
+                                    <span>12个群组</span>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="card" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
+                            <div class="card-header">
+                                <div class="card-title">个人社交</div>
+                                <div class="card-badge">永久</div>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-meta">
+                                    <i class="fas fa-gamepad"></i>
+                                    <span>游戏达人 | 摄影爱好者</span>
+                                </div>
+                                <div class="card-meta">
+                                    <i class="fas fa-link"></i>
+                                    <span>B站: 摄影小张</span>
+                                </div>
+                                <div class="card-meta">
+                                    <i class="fas fa-users"></i>
+                                    <span>8个群组</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="add-identity-btn">
+                            <i class="fas fa-plus"></i> 添加新身份卡
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Page -->
+            <div class="page" id="groups">
+                 <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">我的社群</div>
+                        <div class="btn-more">导入</div>
+                    </div>
+                    <div class="groups-list">
+                        <!-- Example Group Item -->
+                        <div class="group-item">
+                            <div class="group-icon">
+                                <i class="fab fa-weixin"></i>
+                            </div>
+                            <div class="group-info">
+                                <div class="group-name">产品设计群</div>
+                                <div class="group-meta">关联身份：工作身份</div>
+                                <div class="group-meta">成员数量：42</div>
+                            </div>
+                        </div>
+                         <div class="group-item">
+                            <div class="group-icon">
+                                <i class="fab fa-qq"></i>
+                            </div>
+                            <div class="group-info">
+                                <div class="group-name">摄影交流</div>
+                                <div class="group-meta">关联身份：个人社交</div>
+                                <div class="group-meta">成员数量：128</div>
+                            </div>
+                        </div>
+                        <div class="add-group-btn">
+                            <i class="fas fa-plus"></i> 导入新社群
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discover Page -->
+            <div class="page" id="discover">
+                 <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">共同社群发现</div>
+                        <div class="btn-more">更多</div>
+                    </div>
+                    <div class="discover-list">
+                        <!-- Example Discover Item -->
+                        <div class="discover-item">
+                            <div class="discover-avatar">赵</div>
+                            <div class="discover-info">
+                                <div class="discover-name">赵同学</div>
+                                <div class="discover-meta">共同社群：摄影交流 (QQ群)</div>
+                            </div>
+                            <div class="discover-action">
+                                <button>添加好友</button>
+                            </div>
+                        </div>
+                         <div class="discover-item">
+                            <div class="discover-avatar">钱</div>
+                            <div class="discover-info">
+                                <div class="discover-name">钱工程师</div>
+                                <div class="discover-meta">共同社群：技术前沿 (TG群)</div>
+                            </div>
+                            <div class="discover-action">
+                                <button>添加好友</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Channel Page -->
+            <div class="page" id="channel">
+                 <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">频道与私信</div>
+                        <div class="btn-more">更多</div>
+                    </div>
+                    <!-- Combined Channel and Chat List -->
+                    <div class="chat-list">
+                        <!-- Personal Channel (Pinned) -->
+                        <div class="chat-item channel-item personal-channel-item">
+                            <div class="chat-avatar personal-channel-avatar">张</div>
+                            <div class="chat-info">
+                                <h4>我的个人频道</h4>
+                                <p>点击发布广播或查看历史动态</p>
+                            </div>
+                            <div class="chat-time"><i class="fas fa-thumbtack"></i></div> <!-- Pin icon -->
+                        </div>
+                        <!-- Example Subscribed Channel -->
+                        <div class="chat-item channel-item">
+                            <div class="chat-avatar" style="background: linear-gradient(135deg, #10b981, #06b6d4);">王</div>
+                            <div class="chat-info">
+                                <h4>王设计师的频道</h4>
+                                <p>刚刚更新了我的设计作品集...</p>
+                            </div>
+                            <div class="chat-time">2小时前</div>
+                        </div>
+                        <!-- Example Direct Message -->
+                        <div class="chat-item">
+                            <div class="chat-avatar">李</div>
+                            <div class="chat-info">
+                                <h4>李技术</h4>
+                                <p>好的，链接已发给你，请查收！</p>
+                            </div>
+                            <div class="chat-time">1小时前</div>
+                        </div>
+                        <!-- Example Simple Group Chat -->
+                         <div class="chat-item">
+                            <div class="chat-avatar"><i class="fas fa-users"></i></div>
+                            <div class="chat-info">
+                                <h4>产品设计小会</h4>
+                                <p>[图片] 方案初稿，大家看看</p>
+                            </div>
+                            <div class="chat-time">3小时前</div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Channel Detail Page (Simulated Chat/Channel View) -->
+            <div class="page" id="channel-detail">
+                <div class="app-header" style="padding-bottom: 16px;">
+                    <div class="header-top">
+                        <div class="btn-more" id="backToChannelList"><i class="fas fa-arrow-left"></i> 返回</div>
+                        <div class="app-title" style="font-size: 20px;">
+                             <span id="channelDetailTitle">频道/聊天名称</span>
+                        </div>
+                        <div class="btn-more">详情</div>
+                    </div>
+                </div>
+
+                <div class="app-content" style="padding-top: 0;">
+                    <!-- Message List -->
+                    <div class="message-list" style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 80px;">
+                        <!-- Example Received Message (for subscribed channels or chats) -->
+                        <div class="message-item received">
+                            <div class="message-avatar">王</div>
+                            <div class="message-bubble">
+                                <div class="message-sender">王设计师</div>
+                                <div class="message-text">
+                                    刚刚更新了我的设计作品集，欢迎大家来交流反馈！
+                                </div>
+                                <div class="message-meta">
+                                    <span class="message-time">2小时前</span>
+                                    <span class="message-views"><i class="fas fa-eye"></i> 88</span>
+                                    <span class="message-comments"><i class="fas fa-comment"></i> 5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Example Sent Message (for personal channel or chats) -->
+                        <div class="message-item sent">
+                             <div class="message-bubble">
+                                <div class="message-text">
+                                    这是我的第一条频道广播！欢迎大家关注我的动态。
+                                </div>
+                                <div class="message-meta">
+                                    <span class="message-time">刚刚</span>
+                                    <span class="message-views"><i class="fas fa-eye"></i> 150</span>
+                                    <span class="message-comments"><i class="fas fa-comment"></i> 0</span>
+                                </div>
+                            </div>
+                             <div class="message-avatar">张</div>
+                        </div>
+
+                         <!-- Example Received Message with Image -->
+                        <div class="message-item received">
+                            <div class="message-avatar"><i class="fas fa-users"></i></div>
+                            <div class="message-bubble">
+                                <div class="message-sender">产品设计小会</div>
+                                <div class="message-image" style="width: 200px; height: 150px; background: var(--light); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                                     <i class="fas fa-image"></i> 方案初稿
+                                </div>
+                                <div class="message-meta">
+                                    <span class="message-time">3小时前</span>
+                                    <span class="message-comments"><i class="fas fa-comment"></i> 12</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Message Input Area (for personal channel and chats) -->
+                <div class="message-input-area" style="position: absolute; bottom: 0; left: 0; right: 0; background: white; padding: 12px 16px; border-top: 1px solid rgba(0, 0, 0, 0.05); display: flex; align-items: center; gap: 12px;">
+                    <input type="text" placeholder="输入消息..." style="flex: 1; padding: 10px 12px; border: 1px solid var(--gray); border-radius: 20px; font-size: 16px;">
+                    <button class="btn-primary" style="padding: 10px 16px; border-radius: 20px;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+
+            <!-- My Page -->
+            <div class="page" id="my">
+                 <div class="section">
+                    <div class="my-info">
+                        <div class="user-avatar">张</div>
+                        <h3>张三</h3>
+                    </div>
+                    <div class="my-settings-list">
+                        <div class="setting-item">
+                            <span>账号与安全</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                         <div class="setting-item">
+                            <span>隐私设置</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                         <div class="setting-item">
+                            <span>通知设置</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                         <div class="setting-item">
+                            <span>帮助与反馈</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                         <div class="setting-item">
+                            <span>关于我们</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                         <div class="setting-item">
+                            <span>退出登录</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="fab">
+            <i class="fas fa-plus"></i>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-target="home">
+                <i class="fas fa-home nav-icon"></i>
+                <span>首页</span>
+            </div>
+            <div class="nav-item" data-target="identity">
+                <i class="fas fa-id-card nav-icon"></i>
+                <span>身份</span>
+            </div>
+            <div class="nav-item" data-target="discover">
+                <i class="fas fa-compass nav-icon"></i>
+                <span>发现</span>
+            </div>
+            <div class="nav-item" data-target="channel">
+                <i class="fas fa-bell nav-icon"></i>
+                <span>频道</span>
+            </div>
+            <div class="nav-item" data-target="my">
+                <i class="fas fa-user nav-icon"></i>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for creating new ID card -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">创建新身份卡</div>
+                <div class="modal-close">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <p>模态窗口内容将在这里显示...</p>
+        </div>
+    </div>
+
+    <!-- Modal for switching identity -->
+    <div class="modal" id="switchIdentityModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">切换身份卡</div>
+                <div class="modal-close">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="identity-list identity-switch-list">
+                <!-- Example Identity Card Item for Switching -->
+                <div class="card" data-identity-name="工作身份">
+                    <div class="card-header">
+                        <div class="card-title">工作身份</div>
+                        <div class="card-badge">永久</div>
+                    </div>
+                     <div class="card-content">
+                        <div class="card-meta">
+                            <i class="fas fa-user-tie"></i>
+                            <span>高级产品经理</span>
+                        </div>
+                        <div class="card-meta">
+                            <i class="fas fa-link"></i>
+                            <span>微信: work_zhang</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" data-identity-name="个人社交" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
+                    <div class="card-header">
+                        <div class="card-title">个人社交</div>
+                        <div class="card-badge">永久</div>
+                    </div>
+                     <div class="card-content">
+                        <div class="card-meta">
+                            <i class="fas fa-gamepad"></i>
+                            <span>游戏达人 | 摄影爱好者</span>
+                        </div>
+                        <div class="card-meta">
+                            <i class="fas fa-link"></i>
+                            <span>B站: 摄影小张</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="phone2.js"></script>
+</body>
+</html>
