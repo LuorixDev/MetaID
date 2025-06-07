@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">metaid</string>
+    <string name="title_activity_main">metaid</string>
+    <string name="package_name">ionic.metaid</string>
+    <string name="custom_url_scheme">ionic.metaid</string>
+</resources>
